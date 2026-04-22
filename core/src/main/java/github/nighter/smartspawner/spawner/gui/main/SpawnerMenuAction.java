@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SpawnerMenuAction implements Listener {
+    private static final Set<String> MENDING_LIKE_ENCHANT_KEYS = Set.of("mending", "repairing", "repair");
     private static final Set<Material> SPAWNER_INFO_MATERIALS = Set.of(
         Material.PLAYER_HEAD,
         Material.SPAWNER,
@@ -403,28 +404,43 @@ public class SpawnerMenuAction implements Listener {
             return 0;
         }
 
+        plugin.debug("[MENDING_DEBUG] Start mending check for " + player.getName() +
+                " | availableExp=" + availableExp +
+                " | allowedKeys=" + MENDING_LIKE_ENCHANT_KEYS);
+
         int expUsed = 0;
         PlayerInventory inventory = player.getInventory();
-        List<ItemStack> itemsToCheck = Arrays.asList(
-                inventory.getItemInMainHand(),
-                inventory.getItemInOffHand(),
-                inventory.getHelmet(),
-                inventory.getChestplate(),
-                inventory.getLeggings(),
-                inventory.getBoots()
-        );
+        List<ItemStack> itemsToCheck = new ArrayList<>();
+
+        // Include full player inventory, so custom repair enchants on non-equipped items are considered.
+        itemsToCheck.addAll(Arrays.asList(inventory.getStorageContents()));
+        itemsToCheck.add(inventory.getItemInMainHand());
+        itemsToCheck.add(inventory.getItemInOffHand());
+        itemsToCheck.add(inventory.getHelmet());
+        itemsToCheck.add(inventory.getChestplate());
+        itemsToCheck.add(inventory.getLeggings());
+        itemsToCheck.add(inventory.getBoots());
 
         for (ItemStack item : itemsToCheck) {
             if (availableExp <= 0) {
                 break;
             }
 
-            if (item == null || item.getType() == Material.AIR ||
-                    !item.getEnchantments().containsKey(Enchantment.MENDING)) {
+            if (item == null || item.getType() == Material.AIR) {
+                continue;
+            }
+
+            if (!hasMendingLikeEnchantment(item)) {
+                plugin.debug("[MENDING_DEBUG] Skip item=" + item.getType() +
+                        " | enchants=" + formatEnchantKeys(item) +
+                        " | reason=no mending-like enchant");
                 continue;
             }
 
             if (!(item.getItemMeta() instanceof Damageable damageable) || damageable.getDamage() <= 0) {
+                plugin.debug("[MENDING_DEBUG] Skip item=" + item.getType() +
+                        " | enchants=" + formatEnchantKeys(item) +
+                        " | reason=not damageable or already full durability");
                 continue;
             }
 
@@ -448,6 +464,13 @@ public class SpawnerMenuAction implements Listener {
             meta.setDamage(newDamage);
             item.setItemMeta(meta);
 
+                plugin.debug("[MENDING_DEBUG] Repaired item=" + item.getType() +
+                    " | enchants=" + formatEnchantKeys(item) +
+                    " | damageBefore=" + damage +
+                    " | damageAfter=" + newDamage +
+                    " | expUsedNow=" + actualExpUsed +
+                    " | expLeft=" + (availableExp - actualExpUsed));
+
             availableExp -= actualExpUsed;
             expUsed += actualExpUsed;
 
@@ -456,7 +479,43 @@ public class SpawnerMenuAction implements Listener {
             player.spawnParticle(Particle.HAPPY_VILLAGER, player.getLocation().add(0, 1, 0), 5);
         }
 
+        plugin.debug("[MENDING_DEBUG] End mending check for " + player.getName() +
+                " | totalExpUsed=" + expUsed +
+                " | expRemaining=" + availableExp);
+
         return expUsed;
+    }
+
+    private boolean hasMendingLikeEnchantment(ItemStack item) {
+        for (Enchantment enchantment : item.getEnchantments().keySet()) {
+            if (isVanillaOrEcoEnchantsMending(enchantment)) {
+                plugin.debug("[MENDING_DEBUG] Enchant match item=" + item.getType() +
+                        " | enchant=" + enchantment.getKey());
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isVanillaOrEcoEnchantsMending(Enchantment enchantment) {
+        if (Enchantment.MENDING.equals(enchantment)) {
+            return true;
+        }
+
+        return MENDING_LIKE_ENCHANT_KEYS.contains(enchantment.getKey().getKey().toLowerCase(Locale.ROOT));
+    }
+
+    private String formatEnchantKeys(ItemStack item) {
+        if (item.getEnchantments().isEmpty()) {
+            return "[]";
+        }
+
+        List<String> keys = new ArrayList<>();
+        for (Enchantment enchantment : item.getEnchantments().keySet()) {
+            keys.add(enchantment.getKey().toString());
+        }
+        return keys.toString();
     }
 
     private void sendExpCollectionMessage(Player player, int totalExp, int mendingExp) {
