@@ -1,7 +1,7 @@
 # SmartSpawner – AI Agent Guide
 
 ## Project Overview
-SmartSpawner is a Paper/Folia Minecraft plugin (MC 1.21–1.21.11, Java 21) that replaces vanilla spawner behaviour with a GUI-driven, virtual-inventory system. Spawners generate loot/XP without spawning mobs, support stacking, and integrate with dozens of economy/protection/shop plugins.
+SmartSpawner is a Paper/Folia Minecraft plugin (MC 1.21–1.21.11, Java 21) that replaces vanilla spawner behaviour with a GUI-driven, virtual-inventory system. Spawners generate loot/XP without spawning mobs, support stacking, and integrate with dozens of economy/protection/shop plugins. The docs site lives in [docs/](docs/) and should be treated as a separate Astro project.
 
 ## Module Structure
 ```
@@ -10,7 +10,14 @@ SmartSpawner/
   core/   – Plugin implementation. Depends on :api. All gameplay logic lives here.
   nms/    – Reserved placeholder (currently empty/unused).
 ```
-Version is declared once in the **root** `build.gradle.kts` (`version = "1.6.4"`). Resource filtering injects it into `plugin.yml` / `paper-plugin.yml`.
+Version is declared once in the **root** [build.gradle.kts](build.gradle.kts) (`version = "1.6.5"`). Resource filtering injects it into `plugin.yml` / `paper-plugin.yml`.
+
+## How To Work Here
+- Start in [core/](core/) for gameplay, threading, storage, GUI, and integration changes.
+- Use [api/](api/) only for external-facing contracts, DTOs, and events; keep it free of Paper internals.
+- Treat [docs/](docs/) as a separate site with its own build and content rules.
+- Prefer linking to existing docs and source files instead of restating them in new instructions.
+- When a change touches behavior, look for the nearest owning service or manager rather than editing call sites first.
 
 ## Build & Output
 ```bash
@@ -22,6 +29,7 @@ Version is declared once in the **root** `build.gradle.kts` (`version = "1.6.4"`
 - `tasks.jar` produces `SmartSpawnerJar-*.jar` (no shaded deps) – **not** the server JAR.
 - Shaded & relocated: `HikariCP` → `github.nighter.smartspawner.libs.hikari`, `mariadb-java-client` → `...libs.mariadb`.
 - SQLite JDBC is `compileOnly`; it must be present on the server (Paper bundles it).
+- The repo does not currently declare a dedicated test suite; validate changes with the narrowest relevant Gradle task and a build.
 
 ## Key Classes to Know
 | Class | Role |
@@ -43,10 +51,17 @@ Version is declared once in the **root** `build.gradle.kts` (`version = "1.6.4"`
 - **Never** call `Bukkit.getScheduler()` directly. Use `Scheduler.runTask()`, `Scheduler.runLocationTask()`, `Scheduler.runAsync()`, etc.
 - `SpawnerData` lock order: acquire at most one of `inventoryLock`, `lootGenerationLock`, `dataLock` at a time. Use `tryLock()` (with short timeout) to avoid blocking the server thread – see `SpawnerLootGenerator.spawnLootToSpawner()` for the canonical pattern.
 - Sell exclusion is guarded by `SpawnerData.selling` (`AtomicBoolean`); use `selling.compareAndSet(false, true)` / `selling.set(false)` rather than a lock – see `SpawnerSellManager` for the canonical pattern.
+- If a change touches spawner state, check whether the update should be routed through `SpawnerData`, `SpawnerManager`, or the synchronization layer before editing UI code.
 
 ## Storage Modes
 Configured via `config.yml`. Three modes: `YAML` (default, `spawners_data.yml`), `MYSQL`, `SQLITE`.  
 Migration utilities: `YamlToDatabaseMigration`, `SqliteToMySqlMigration`.
+
+## Localization Workflow
+- Keep locale keys aligned across `core/src/main/resources/language/en_US/` and the other locale folders.
+- Add or update English keys first, then mirror the change to the other supported locales when relevant.
+- Use `./gradlew :core:generateLanguageChangelog` after language-key changes so `language/CHANGELOG.txt` stays current.
+- Never hardcode player-facing text; route messages through `MessageService`.
 
 ## Configuration Files (in `core/src/main/resources/`)
 | File | Purpose |
@@ -86,5 +101,5 @@ Do **not** add `chain = true` – accessor chaining is intentionally disabled on
 ## Public API (for external plugins)
 External plugins obtain the API via `SmartSpawnerProvider.getAPI()` (returns `SmartSpawnerAPI`).  
 Events are in `api/src/main/java/.../api/events/`. Data transfer is via `SpawnerDataDTO` / `SpawnerDataModifier`.  
-The API module has no dependency on `core`; it only depends on Paper API.
+Keep API changes backward compatible when possible, add or adjust types in `api/` before wiring implementation details in `core/`, and do not leak Paper-only classes into the API module.
 
