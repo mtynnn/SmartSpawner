@@ -26,18 +26,12 @@ dependencies {
         exclude(group = "*")
     }
     compileOnly("com.palmergames.bukkit.towny:towny:0.102.0.14")
-    compileOnly("com.bgsoftware:SuperiorSkyblockAPI:2025.2.1")
+    compileOnly("com.bgsoftware:SuperiorSkyblockAPI:2026.1")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
     compileOnly("su.nightexpress.coinsengine:CoinsEngine:2.6.0")
     compileOnly("com.github.Gypopo:EconomyShopGUI-API:1.9.0")
-    compileOnly("world.bentobox:bentobox:3.14.2")
+    compileOnly("world.bentobox:bentobox:3.15.0")
     compileOnly("su.nightexpress.excellentshop:Core:4.22.0")
-    compileOnly("io.github.fabiozumbi12.RedProtect:RedProtect-Core:8.1.2") {
-        exclude(group = "*")
-    }
-    compileOnly("io.github.fabiozumbi12.RedProtect:RedProtect-Spigot:8.1.2") {
-        exclude(group = "*")
-    }
     compileOnly("dev.aurelium:auraskills-api-bukkit:2.3.12")
     compileOnly("pl.minecodes.plots:plugin-api:4.6.2")
     compileOnly("fr.maxlego08.shop:zshop-api:3.3.4")
@@ -45,7 +39,7 @@ dependencies {
 
     implementation("com.github.GriefPrevention:GriefPrevention:18.0.0")
     implementation("com.github.IncrediblePlugins:LandsAPI:7.25.4")
-    implementation("com.github.Xyness:SimpleClaimSystem-API:v2.2.1")
+    implementation("com.github.Xyness:SimpleClaimSystem-API:v2.3.4")
     implementation("com.github.Xyness:SimpleClaimSystem:1.13.0.2")
     implementation("com.github.Zrips:Residence:6.0.0.1") {
         exclude(group = "org.bukkit")
@@ -58,8 +52,8 @@ dependencies {
     compileOnly("com.intellectualsites.plotsquared:plotsquared-core")
     compileOnly("net.william278.huskclaims:huskclaims-bukkit:1.5.10")
 
-    compileOnly("org.projectlombok:lombok:1.18.44")
-    annotationProcessor("org.projectlombok:lombok:1.18.44")
+    compileOnly("org.projectlombok:lombok:1.18.46")
+    annotationProcessor("org.projectlombok:lombok:1.18.46")
 
     implementation("org.bstats:bstats-bukkit:3.2.1")
 }

@@ -429,7 +429,8 @@ public class SpawnerStackerHandler implements Listener {
 
         // Remove from inventory and update stack
         if(SpawnerStackEvent.getHandlerList().getRegisteredListeners().length != 0) {
-            SpawnerStackEvent e = new SpawnerStackEvent(player, spawner.getSpawnerLocation(), spawner.getStackSize(), spawner.getStackSize() + actualChange, SpawnerStackEvent.StackSource.GUI);
+            SpawnerStackEvent e = new SpawnerStackEvent(player, spawner.getSpawnerLocation(), spawner.getStackSize(),
+                    spawner.getStackSize() + actualChange, SpawnerStackEvent.StackSource.GUI, spawner.getEntityType());
             Bukkit.getPluginManager().callEvent(e);
             if (e.isCancelled()) return;
         }
@@ -480,11 +481,17 @@ public class SpawnerStackerHandler implements Listener {
             return;
         }
 
+        if (scanResult.availableSpawners == 0) {
+            messageService.sendMessage(player, "spawner_insufficient_quantity",
+                Map.of("amountChange", "1", "amountAvailable", "0"));
+            return;
+        }
+
         int actualChange = Math.min(spaceLeft, scanResult.availableSpawners);
 
         if (SpawnerStackEvent.getHandlerList().getRegisteredListeners().length != 0) {
             SpawnerStackEvent e = new SpawnerStackEvent(player, spawner.getSpawnerLocation(), spawner.getStackSize(),
-                    spawner.getStackSize() + actualChange, SpawnerStackEvent.StackSource.GUI);
+                    spawner.getStackSize() + actualChange, SpawnerStackEvent.StackSource.GUI, spawner.getEntityType());
             Bukkit.getPluginManager().callEvent(e);
             if (e.isCancelled())
                 return;
