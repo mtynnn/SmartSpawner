@@ -9,6 +9,7 @@ import github.nighter.smartspawner.spawner.properties.SpawnerData;
 import github.nighter.smartspawner.spawner.data.SpawnerManager;
 import github.nighter.smartspawner.Scheduler;
 import github.nighter.smartspawner.spawner.utils.SpawnerTypeChecker;
+import github.nighter.smartspawner.spawner.limits.SpawnerPlacementLimitService;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -78,6 +79,16 @@ public class SpawnerPlaceListener implements Listener {
         if (!CheckStackBlock.CanPlayerPlaceBlock(player, block.getLocation())) {
             event.setCancelled(true);
             return;
+        }
+
+        SpawnerPlacementLimitService limitService = plugin.getSpawnerPlacementLimitService();
+        if (limitService != null) {
+            SpawnerPlacementLimitService.LimitCheckResult limitResult = limitService.canPlace(player, block.getLocation());
+            if (!limitResult.isAllowed()) {
+                event.setCancelled(true);
+                messageService.sendMessage(player, limitResult.getMessageKey(), limitResult.getPlaceholders());
+                return;
+            }
         }
 
         boolean isVanillaSpawner = SpawnerTypeChecker.isVanillaSpawner(item);

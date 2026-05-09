@@ -43,6 +43,33 @@ spawner_properties:
     protect_from_explosions: true   # Protect spawner blocks from explosion
 
 #---------------------------------------------------
+#             Spawner Placement Limits
+#---------------------------------------------------
+# Physical-block based placement limits for performance.
+# These limits count placed spawner blocks, not stack size.
+placement_limits:
+  count_mode: PHYSICAL_BLOCKS
+
+  chunk_limit:
+    enabled: false
+    max_per_chunk: 64
+
+  player_limit:
+    enabled: false
+    max_per_player: 512
+
+  permissions:
+    bypass: "smartspawner.limit.bypass"
+
+  legacy_handling:
+    # GRANDFATHER: existing spawners are respected; only new growth is blocked when at limit.
+    # STRICT: also blocks player-side stack actions when already at/over limits.
+    # OFF: ignore existing spawners for limits until new placements happen.
+    mode: GRANDFATHER
+    # If true, spawners with unknown owner are counted in a shared owner bucket.
+    unknown_owner_bucket: false
+
+#---------------------------------------------------
 #           Spawner Breaking Mechanics
 #---------------------------------------------------
 # Controls how players can break and collect spawners

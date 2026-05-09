@@ -7,6 +7,7 @@ import github.nighter.smartspawner.language.MessageService;
 import github.nighter.smartspawner.spawner.properties.SpawnerData;
 import github.nighter.smartspawner.Scheduler;
 import github.nighter.smartspawner.spawner.utils.SpawnerTypeChecker;
+import github.nighter.smartspawner.spawner.limits.SpawnerPlacementLimitService;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
@@ -157,6 +158,16 @@ public class SpawnerStackHandler {
         if (currentStack >= maxStackSize) {
             messageService.sendMessage(player, "spawner_stack_full", placeholders);
             return false;
+        }
+
+        SpawnerPlacementLimitService limitService = plugin.getSpawnerPlacementLimitService();
+        if (limitService != null) {
+            SpawnerPlacementLimitService.LimitCheckResult limitResult = limitService
+                    .canIncreaseByPlayer(player, targetSpawner.getSpawnerLocation());
+            if (!limitResult.isAllowed()) {
+                messageService.sendMessage(player, limitResult.getMessageKey(), limitResult.getPlaceholders());
+                return false;
+            }
         }
 
         return processStackAddition(player, targetSpawner, itemInHand, stackAll, currentStack, maxStackSize);

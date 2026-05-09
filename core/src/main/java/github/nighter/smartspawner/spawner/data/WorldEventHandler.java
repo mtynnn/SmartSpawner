@@ -155,6 +155,10 @@ public class WorldEventHandler implements Listener {
         logger.info("Initial spawner load complete. Loaded: " + loadedCount +
                    ", Pending (missing worlds): " + pendingCount);
 
+        if (plugin.getSpawnerPlacementLimitService() != null) {
+            plugin.getSpawnerPlacementLimitService().rebuildIndexesFromSpawnerManager();
+        }
+
         if (pendingCount > 0) {
             logger.info("Pending spawners will be loaded when their worlds become available.");
         }

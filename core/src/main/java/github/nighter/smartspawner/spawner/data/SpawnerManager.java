@@ -87,6 +87,11 @@ public class SpawnerManager {
 
         // Queue for saving
         spawnerStorage.queueSpawnerForSaving(id);
+
+        if (plugin.getSpawnerPlacementLimitService() != null) {
+            plugin.getSpawnerPlacementLimitService()
+                    .onSpawnerCreated(id, spawner.getSpawnerLocation(), spawner.getLastInteractedPlayer());
+        }
     }
 
     public void removeSpawner(String id) {
@@ -109,6 +114,10 @@ public class SpawnerManager {
             }
 
             spawners.remove(id);
+
+            if (plugin.getSpawnerPlacementLimitService() != null) {
+                plugin.getSpawnerPlacementLimitService().onSpawnerRemoved(id, loc);
+            }
         }
     }
 
@@ -145,6 +154,11 @@ public class SpawnerManager {
         // Add to world index
         String worldName = spawner.getSpawnerLocation().getWorld().getName();
         worldIndex.computeIfAbsent(worldName, k -> new HashSet<>()).add(spawner);
+
+        if (plugin.getSpawnerPlacementLimitService() != null) {
+            plugin.getSpawnerPlacementLimitService()
+                    .onSpawnerCreated(spawnerId, spawner.getSpawnerLocation(), spawner.getLastInteractedPlayer());
+        }
     }
 
     public Set<SpawnerData> getSpawnersInWorld(String worldName) {
@@ -168,6 +182,10 @@ public class SpawnerManager {
         Set<SpawnerData> snapshot = new HashSet<>(worldSpawners);
 
         for (SpawnerData spawner : snapshot) {
+            if (plugin.getSpawnerPlacementLimitService() != null) {
+                plugin.getSpawnerPlacementLimitService()
+                        .onSpawnerRemoved(spawner.getSpawnerId(), spawner.getSpawnerLocation());
+            }
             spawner.removeHologram();
             removedSpawnerIds.add(spawner.getSpawnerId());
             spawners.remove(spawner.getSpawnerId());

@@ -48,6 +48,7 @@ import github.nighter.smartspawner.spawner.interactions.type.SpawnEggHandler;
 import github.nighter.smartspawner.spawner.item.SpawnerItemFactory;
 import github.nighter.smartspawner.spawner.lootgen.SpawnerRangeChecker;
 import github.nighter.smartspawner.spawner.data.SpawnerManager;
+import github.nighter.smartspawner.spawner.limits.SpawnerPlacementLimitService;
 import github.nighter.smartspawner.spawner.sell.SpawnerSellManager;
 import github.nighter.smartspawner.spawner.data.SpawnerFileHandler;
 import github.nighter.smartspawner.spawner.data.storage.SpawnerStorage;
@@ -126,6 +127,7 @@ public class SmartSpawner extends JavaPlugin implements SmartSpawnerPlugin {
     private SpawnerStorage spawnerStorage;
     private DatabaseManager databaseManager;
     private SpawnerManager spawnerManager;
+    private SpawnerPlacementLimitService spawnerPlacementLimitService;
     private HopperService hopperService;
     private HopperConfig hopperConfig;
     private SpawnerLocationLockManager spawnerLocationLockManager;
@@ -278,6 +280,7 @@ public class SmartSpawner extends JavaPlugin implements SmartSpawnerPlugin {
         initializeStorage();
 
         this.spawnerManager = new SpawnerManager(this);
+        this.spawnerPlacementLimitService = new SpawnerPlacementLimitService(this);
         this.spawnerLocationLockManager = new SpawnerLocationLockManager(this);
         this.spawnerManager.reloadAllHolograms();
         this.guiLayoutConfig = new GuiLayoutConfig(this);
@@ -542,6 +545,12 @@ public class SmartSpawner extends JavaPlugin implements SmartSpawnerPlugin {
         
         // Reinitialize FormUI components in case config changed
         initializeFormUIComponents();
+
+        // Reload and rebuild placement limit indexes after all data/config reloads
+        if (spawnerPlacementLimitService != null) {
+            spawnerPlacementLimitService.reloadConfig();
+            spawnerPlacementLimitService.rebuildIndexesFromSpawnerManager();
+        }
     }
 
     @Override

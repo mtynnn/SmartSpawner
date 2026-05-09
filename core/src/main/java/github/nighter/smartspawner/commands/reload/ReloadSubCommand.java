@@ -82,6 +82,11 @@ public class ReloadSubCommand extends BaseSubCommand {
             plugin.getSpawnerManager().reloadAllHolograms();
             plugin.reload();
 
+            if (plugin.getSpawnerPlacementLimitService() != null) {
+                plugin.getSpawnerPlacementLimitService().reloadConfig();
+                plugin.getSpawnerPlacementLimitService().rebuildIndexesFromSpawnerManager();
+            }
+
             // Log new cache stats after reload if in debug mode
             if (plugin.getConfig().getBoolean("debug", false)) {
                 logCacheStats();

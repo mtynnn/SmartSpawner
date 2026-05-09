@@ -195,3 +195,16 @@ action_failed:
 please_wait:
   action_bar: "&#3498dbᴠᴇʀᴀʀʙᴇɪᴛᴜɴɢ... ʙɪᴛᴛᴇ ᴡᴀʀᴛᴇɴ."
   sound: block.note_block.harp
+
+spawner_limit_chunk_reached:
+  action_bar: '&cChunk limit reached: &f{current}&c/&f{max} &7(chunk {chunk})'
+  sound: block.note_block.pling
+
+spawner_limit_player_reached:
+  action_bar: '&cPlayer limit reached: &f{current}&c/&f{max} &7({player})'
+  sound: block.note_block.pling
+
+spawner_limit_legacy_exceeded:
+  action_bar: '&cAction blocked by legacy limit policy (&fGRANDFATHER/STRICT&c).'
+  sound: block.note_block.pling
+
